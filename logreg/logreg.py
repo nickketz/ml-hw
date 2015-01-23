@@ -99,7 +99,18 @@ class LogReg:
         """
 
         # TODO: Implement updates in this function
+        #non-regularized update
+        iteration = iteration + 1
+        delta = train_example.y - sigmoid(self.beta.dot(train_example.x))
+        reg = 1 - (2 * self.step(0) * self.mu)
+        self.beta[0] = self.beta[0] + self.step(0)*delta*train_example.x[0]
+        self.beta[0] = self.beta[0]*(1-2*self.step(0)*self.mu)
+        for i in train_example.nonzero.keys():
+            self.beta[i] = (self.beta[i] + (self.step(0)*delta*train_example.x[i]))
+            self.beta[i] = self.beta[i] * (reg**(iteration-self.last_update.get(i,0)))
+            self.last_update[i] = iteration
 
+        self.step = step_update(iteration)        
         return self.beta
 
 
@@ -136,7 +147,7 @@ def read_dataset(positive, negative, vocab, test_proportion=.1):
 def step_update(iteration):
     # TODO (extra credit): Update this function to provide an
     # effective iteration dependent step size
-    return 1.0
+    return lambda x: iteration**(-.25)
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
@@ -168,7 +179,7 @@ if __name__ == "__main__":
             update_number += 1
             lr.sg_update(ii, update_number)
 
-            if update_number % 5 == 1:
+            if update_number % 1000 == 1:
                 train_lp, train_acc = lr.progress(train)
                 ho_lp, ho_acc = lr.progress(test)
                 print("Update %i\tTP %f\tHP %f\tTA %f\tHA %f" %
