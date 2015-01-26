@@ -49,7 +49,7 @@ class Example:
 
 
 class LogReg:
-    def __init__(self, num_features, mu, step=lambda x: 0.05):
+    def __init__(self, num_features, mu, step= lambda x: .05):
         """
         Create a logistic regression classifier
 
@@ -61,6 +61,7 @@ class LogReg:
         self.beta = zeros(num_features)
         self.mu = mu
         self.step = step
+        self.step = step_update(self.step(0),1000)
         self.last_update = defaultdict(int)
 
         assert self.mu >= 0, "Regularization parameter must be non-negative"
@@ -102,15 +103,15 @@ class LogReg:
         #non-regularized update
         iteration = iteration + 1
         delta = train_example.y - sigmoid(self.beta.dot(train_example.x))
-        reg = 1 - (2 * self.step(0) * self.mu)
-        self.beta[0] = self.beta[0] + self.step(0)*delta*train_example.x[0]
-        self.beta[0] = self.beta[0]*(1-2*self.step(0)*self.mu)
+        reg = 1 - (2 * self.step(iteration) * self.mu)
+        self.beta[0] = self.beta[0] + (self.step(iteration)*delta*train_example.x[0])
+        self.beta[0] = self.beta[0]*(1 - (2*self.step(iteration)*self.mu))
         for i in train_example.nonzero.keys():
-            self.beta[i] = (self.beta[i] + (self.step(0)*delta*train_example.x[i]))
+            self.beta[i] = (self.beta[i] + (self.step(iteration)*delta*train_example.x[i]))
             self.beta[i] = self.beta[i] * (reg**(iteration-self.last_update.get(i,0)))
             self.last_update[i] = iteration
 
-        self.step = step_update(iteration)        
+        #self.step = step_update(self.l0,self,lhalf,iteration)
         return self.beta
 
 
@@ -144,10 +145,17 @@ def read_dataset(positive, negative, vocab, test_proportion=.1):
 
     return train, test, vocab
 
-def step_update(iteration):
+def step_update(l0,istart):
+    """
+    Creates annealed learning rate lambda function
+
+    :param l0: starting learning rate
+    :param istart: iteration when learning rate is cut in half, and starts decreasing from there
+    """
     # TODO (extra credit): Update this function to provide an
     # effective iteration dependent step size
-    return lambda x: iteration**(-.25)
+
+    return lambda x: l0/(1+(x/istart))
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
@@ -163,6 +171,12 @@ if __name__ == "__main__":
                            type=str, default="../data/hockey_baseball/vocab", required=False)
     argparser.add_argument("--passes", help="Number of passes through train",
                            type=int, default=1, required=False)
+    argparser.add_argument("--l0", help="Initial learning rate",
+                           type=float, default=.25, required=False)
+    argparser.add_argument("--lhalf", help="Number of iterations until learning rate is halved",
+                           type=int, default=1000, required=False)
+
+
 
     args = argparser.parse_args()
     train, test, vocab = read_dataset(args.positive, args.negative, args.vocab)
