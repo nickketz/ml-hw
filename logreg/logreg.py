@@ -155,7 +155,7 @@ def step_update(l0,istart):
     # TODO (extra credit): Update this function to provide an
     # effective iteration dependent step size
 
-    return lambda x: l0/(1+(x/istart))
+    return lambda x: l0/(1+(x/istart))#lambda x: l0
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
@@ -188,13 +188,18 @@ if __name__ == "__main__":
 
     # Iterations
     update_number = 0
+    updcnt = 0
+    tacc = []
+    hacc = []
     for pp in xrange(args.passes):
         for ii in train:
             update_number += 1
             lr.sg_update(ii, update_number)
 
-            if update_number % 1000 == 1:
+            if update_number % 100 == 1:                
                 train_lp, train_acc = lr.progress(train)
                 ho_lp, ho_acc = lr.progress(test)
+                tacc.append(train_acc)
+                hacc.append(ho_acc)
                 print("Update %i\tTP %f\tHP %f\tTA %f\tHA %f" %
                       (update_number, train_lp, ho_lp, train_acc, ho_acc))
