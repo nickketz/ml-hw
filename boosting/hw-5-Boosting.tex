@@ -1,0 +1,97 @@
+% HMC Math dept HW template example
+% v0.04 by Eric J. Malm, 10 Mar 2005
+\documentclass[12pt,letterpaper,boxed]{hmcpset}
+
+% set 1-inch margins in the document
+\usepackage[margin=1in]{geometry}
+
+% include this if you want to import graphics files with /includegraphics
+\usepackage{graphicx}
+
+\usepackage{amsmath}
+
+% info for header block in upper right hand corner
+\name{Nick Ketz}
+\class{CSCI 5622}
+\assignment{Homework \#5 Boosting}
+\duedate{03/13/2015}
+
+
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\Pr}{\operatornamewithlimits{Pr}}
+\def\therefore{
+  \leavevmode
+  \lower0.1ex\hbox{$\bullet$}
+  \kern-0.2em\raise0.7ex\hbox{$\bullet$}
+  \kern-0.2em\lower0.15ex\hbox{$\bullet$}
+  \thinspace
+}
+
+\begin{document}
+
+\problemlist{Problems 6.3 and 6.6 from the Foundations of Machine Learning textbook}
+
+\begin{problem}[6.3]
+Update guarantee. Assume that the main weak learner assumption of AdaBoost holds. Let $h_t$ be the base learner selected at round $t$. Show that the base learner $h_{t+1}$ selected at round $t + 1$ must be different from $h_t$.
+\end{problem}
+
+\begin{solution}
+from the algorithm in Figure 6.1:\\
+$D_0 = \frac{1}{m}\\
+h_t \in  \argmin\limits_{h\in H} D_t(i)1_{h(x_i) \neq y_i} \\
+h_t$ is base learner in $H$, i.e. $ \epsilon_t = \Pr_{i\sim D_t} [h_t(x_i) \neq y_i]<1/2\\
+\alpha_t = \frac{1}{2} \log(\frac{1- \epsilon_t}{\epsilon_t})\\
+D_{t+1}(i) = D_{t}(i) \cdot \exp( - \alpha_t y_i h_{t}(x_i)) \cdot Z_t^{-1} \\$
+$\\$
+%The data distribution $D_t$ changes with every new hypothesis $h_t$ over the training sample $X$ based on the error $\epsilon_t$.  $h_t$ is picked in an attempt to minimize error on the training sample weighted by $D_t$:
+assume: $\\h_t = h_{t+1}\\ \\$
+implies: $\\\argmin\limits_{h\in H} D_t \cdot 1_{h(X) \neq Y} = \argmin\limits_{h\in H} D_{t+1} \cdot 1_{h(X) \neq Y} \\ $
+$D_t \cdot 1_{h_t(X) \neq Y} = D_{t+1} \cdot 1_{h_t(X) \neq Y} \\$
+$D_t= D_{t+1}\\\\$
+ignoring normalization factor $Z$, which rescales D after its calculated\\
+$D_{t}(i) = (1/m) \cdot \exp( - \alpha_t y_i h_{t}(x_i)) = D_{t}(i)  \cdot \exp( - \alpha_{t+1} y_i h_{t}(x_i))  \\$
+$1 = \exp( - \alpha_{t+1} y_i h_{t}(x_i))  \\$
+$ 0 = - \alpha_{t+1} y_i h_{t}(x_i)  \\$
+$ 0 =  \frac{1}{2} \log(\frac{1- \epsilon_{t+1}}{\epsilon_{t+1}})\\$
+$ e^{0} = \frac{1- \epsilon_{t+1}}{\epsilon_{t+1}}\\$
+$ \epsilon_{t+1} = 1-\epsilon_{t+1}\\$
+$\epsilon_{t+1} = 1/2$\\
+$\therefore$
+$h_t = h_{t+1}$ Contradicts base learner assumption\\\\
+$\epsilon_t < \frac{1}{2}$, based on the weak learner assumption, forces $\alpha$ to reweigh the sample distribution through $D_{t+1}$, forcing $h_{t+1} \neq h_t$
+\end{solution}
+
+\begin{problem}[6.6]
+Fix $\epsilon \in \{0, \frac{1}{2}\}$. Let the training sample be defined by $m$ points in the plane with $m/4$ negative points all at coordinate $(1,1)$, another $m/4$ negative points all at coordinate $(-1, -1)$, $\frac{m(1-\epsilon)}{4}$ positive points all at coordinate $(1, -1)$, and $\frac{m(1+\epsilon)}{4}$ positive points all at coordinate $(-1, +1)$. Describe the behavior of AdaBoost when run on this sample using boosting stumps. What solution does the algorithm return after $T$ rounds?
+
+\end{problem}
+
+\begin{solution}
+consider four sets each with $m/4$ points:
+$\\A: y=-1 \text{ at } (-1,-1), B: y=-1 \text{ at } (1,1)\\$
+$C : y=+1 \text{ at } (1,-1), D: y=+1 \text{ at } (-1,1)\\ \\$
+$D_0 = 1/m$, {equally weighting of all points}
+$\\$
+$h_0 = $ horizontal line through origin implying positive for $x_1>0\\$
+$\epsilon_0 = \frac{1}{m} (B + C) = \frac{1}{m} (\frac{m}{4} + \frac{m}{4}) = \frac{1}{2}\\$
+$\alpha_0 = \frac{1}{2} \log \frac{1-\epsilon_0}{\epsilon_0} = 0\\$
+$Z_0 = 2[\epsilon_0(1-\epsilon_0)]^{1/2} = 2[(\frac{1}{2}^2)^{1/2}]=1\\$
+$D_{1} = D_0 \cdot \exp(-\alpha_0 Y h_0(X)) \cdot Z_0^{-1} = \frac{1}{m} \cdot 1 \cdot 1^{-1}=1/m\\ \\$
+$h_1$ = vertical line through origin, gives the same $\epsilon$:\\
+$\epsilon_1 = \frac{1}{m} (A + D) = \frac{1}{m} (\frac{m}{4} + \frac{m}{4}) = \frac{1}{2}\\$
+implies $D_2 = D_1 = D_0 = 1/m\\\\$
+There can be no change through $T$ iterations as $\epsilon$ will always be $1/2$.\\\\
+Final solution:\\
+$h = $sgn$(g_T)\\$
+$g_T = \sum_{i=1}^{T} \alpha_i h_i = 1/2(h_0 + h_1)\\\\$
+$h(A) = 1/2(-m/4 + m/4) = 0\\ h(B) = 1/2(m/4-m/4) = 0\\ h(C) = 1/2(m/4-m/4)=0\\h(D)=1/2(-m/4+m/4)=0$
+
+
+
+%This is because $H$ can't meet the weak learning assumption given the sample $S$:
+%
+%$\\\Pr\limits_{S \sim D^m} [R(h_s )< \frac{1}{2} - \gamma ] \leq 1-\delta\\ \\$
+%for given sample $s$, generalization error, $R$, for a given sample determined hypothesis $h_s$ must be lower than $\frac{1}{2}-\gamma$, with probability of $1-\delta$.  In this case, $R(h_s) \geq \frac{1}{2}$ violating this assumption.
+\end{solution}
+
+\end{document}
