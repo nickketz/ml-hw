@@ -1,7 +1,8 @@
 function datscat2d(f1,f2,ft,cfg)
 %
 % scatter plot of MRI data along two MR image types with target voxels
-% sized larger than non-target. Plots are done one 'z' slice at a time
+% sized larger than non-target, and color is different for each patient
+% Plots are done one 'z' slice at a time
 %
 %input:
 %   f1: x1 nii file name and path
