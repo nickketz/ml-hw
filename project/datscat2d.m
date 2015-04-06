@@ -1,15 +1,20 @@
-function datscat2d(f1,f2,ft,cfg)%dozscore,npoints,slices)
-
+function datscat2d(f1,f2,ft,cfg)
+%
+% scatter plot of MRI data along two MR image types with target voxels
+% sized larger than non-target. Plots are done one 'z' slice at a time
+%
 %input:
 %   f1: x1 nii file name and path
 %   f2: x2 nii file name and path
 %   ft: y nii file name and path
 %   cfg: config struc
-%       -dozscore: bool, zscore x vars (def: 1)
-%       -npoints: num of rand points to sample from each sub (def:500)
-%       -slices: vector of which slices to view (def:all)
-%       -dosubplot: bool, plot slices in subplots (def:0)
+%       cfg.dozscore: bool, zscore x vars (def: 1)
+%       cfg.npoints: num of rand points to sample from each sub (def:500)
+%       cfg.slices: vector of which z slices to view (def:all)
+%       cfg.dosubplot: bool, plot slices in subplots (def:0)
 %
+% example:
+% datscat2d('MR_DWI_28subs_3mm.nii','MR_Flair_28subs_3mm.nii','OT_28subs_3mm.nii');
 
 
 X1 = load_nii(f1);
